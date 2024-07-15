@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">New_TermP</string>
+    <string name="btn_ITR">음성 녹음</string>
+    <string name="btn_Recording">녹음 시작</string>
+</resources>
