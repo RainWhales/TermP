@@ -8,45 +8,50 @@ from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
 import firebase_admin
 from firebase_admin import credentials, db
+import threading
+import time
 
-# Firebase 초기화
-cred = credentials.Certificate(r'C:\Users\Jung\Desktop\TermP-git\CameraCode\firebasepy.json')
+# Initialize Firebase
+cred = credentials.Certificate('path/to/serviceAccountKey.json')
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://anproject-846d0-default-rtdb.firebaseio.com/'
 })
 
-# 모델 로드
+# Load the model
 loaded_model = tf.keras.models.load_model('keras_model.h5')
 
-# CSV 파일에 헤더를 추가
+# Create CSV file with headers
 csv_filename = 'realtime_data.csv'
 with open(csv_filename, mode='w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(['R', 'G', 'B', 'Openness', 'Width'])  # Label은 추후 예측 시 추가할 수 있음
+    writer.writerow(['R', 'G', 'B', 'Openness', 'Width'])  # Add labels later if needed
 
-# Mediapipe의 Face Mesh 모델 로드
+# Load Mediapipe Face Mesh model
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
 
-# 웹캠에서 영상을 받아오는 VideoCapture 객체 생성
+# Create VideoCapture object to get video from webcam
 cap = cv2.VideoCapture(0)
 
-# Firebase 경로 설정
+# Set Firebase paths
 signal_ref = db.reference('devices/signal')
 result_ref = db.reference('devices/result')
+
+# Shared variable to control the loop
+collecting_data = False
 
 def process_frame():
     ret, frame = cap.read()
     if not ret:
-        print("비디오 캡처 실패, 종료합니다.")
+        print("Failed to capture video, exiting.")
         return
 
     frame = cv2.flip(frame, 1)
     
-    # 프레임을 BGR에서 RGB로 변환
+    # Convert the frame from BGR to RGB
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     
-    # 얼굴 검출 및 랜드마크 추출
+    # Detect faces and extract landmarks
     results = face_mesh.process(rgb_frame)
 
     if results.multi_face_landmarks:
@@ -58,67 +63,78 @@ def process_frame():
             x_1 = int(np.mean([landmark.x * w for landmark in landmarks]))
             y_1 = int(np.mean([landmark.y * h for landmark in landmarks])) - 5
             
-            # RGB 값 추출
+            # Extract RGB values
             rgb_value = rgb_frame[y_1, x_1]
             r, g, b = rgb_value[0], rgb_value[1], rgb_value[2]
             
-            # 얼굴 너비 계산
+            # Calculate face width
             face_width = math.sqrt(
                 (face_landmarks.landmark[172].x - face_landmarks.landmark[264].x) ** 2 +
                 (face_landmarks.landmark[172].y - face_landmarks.landmark[264].y) ** 2
             )
             face_width = 20 * face_width
 
-            # 입의 세로길이 계산 (고중저모음 판단기준)
+            # Calculate mouth openness (vertical distance)
             upper_lip_bottom = (face_landmarks.landmark[12].x, face_landmarks.landmark[12].y)
             lower_lip_top = (face_landmarks.landmark[14].x, face_landmarks.landmark[14].y)
             mouth_openness = (lower_lip_top[1] - upper_lip_bottom[1]) / face_width
             mouth_openness = round(mouth_openness, 4)
 
-            # 입의 가로길이 계산 (원순/평순 판단기준)
+            # Calculate mouth width (horizontal distance)
             lip_left = (face_landmarks.landmark[61].x, face_landmarks.landmark[61].y)
             lip_right = (face_landmarks.landmark[291].x, face_landmarks.landmark[291].y)
             mouth_width = (lip_right[0] - lip_left[0]) / face_width
             mouth_width = round(mouth_width, 4)
 
-            # CSV 파일에 데이터 추가
+            # Append data to CSV file
             with open(csv_filename, mode='a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow([r, g, b, mouth_openness, mouth_width])
 
-            # 데이터 표준화 및 예측
+            # Standardize data and make predictions
             new_data = pd.read_csv(csv_filename)
             X = new_data[['R', 'G', 'B', 'Openness', 'Width']].values
 
             scaler = StandardScaler()
             scaled_data = scaler.fit_transform(X)
 
-            # 모델을 사용하여 예측 수행
+            # Make predictions using the model
             predictions = loaded_model.predict(scaled_data)
 
-            # 예측 결과 출력 및 Firebase에 업로드
+            # Upload prediction results to Firebase
             for i, prediction in enumerate(predictions):
-                predicted_class = np.argmax(prediction)  # 가장 높은 값(확률)을 가지는 클래스 선택
-                print(f"새로운 데이터 {i+1}의 예측 클래스: {predicted_class}")
-                result_ref.set(predicted_class)  # 결과값을 Firebase에 업로드
+                predicted_class = np.argmax(prediction)  # Choose class with highest probability
+                print(f"Predicted class for new data {i+1}: {predicted_class}")
+                result_ref.set(predicted_class)  # Set prediction result in Firebase
 
-    # 영상 출력
+    # Display video
     cv2.imshow('Face Mesh', frame)
     
-    # 종료 키 (q) 입력 시 종료
+    # Exit if 'q' key is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
         return False
     return True
 
-# Firebase에서 신호를 감시
+# Function to run the frame processing in a loop
+def run_processing():
+    global collecting_data
+    while collecting_data:
+        if not process_frame():
+            break
+        time.sleep(0.1)  # Adding a slight delay to avoid overloading the CPU
+
+# Firebase signal listener
 def listener(event):
+    global collecting_data
     signal = event.data
     if signal == "start_process":
-        print("녹음 시작 신호 수신")
-        while process_frame():
-            pass
+        print("Received start signal")
+        if not collecting_data:
+            collecting_data = True
+            threading.Thread(target=run_processing).start()
     elif signal == "stop_process":
-        print("녹음 중지 신호 수신")
+        print("Received stop signal")
+        collecting_data = False
         cap.release()
         cv2.destroyAllWindows()
 
