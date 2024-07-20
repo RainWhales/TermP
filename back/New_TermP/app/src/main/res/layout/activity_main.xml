@@ -6,43 +6,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#A5C3D1"
-    tools:context=".Recording">
+    tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/btn_Recording"
+        android:id="@+id/btn_Intent_to_Rec"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
         android:gravity="center"
 
-        android:text="@string/btn_Recording"
+        android:text="@string/btn_ITR"
         android:textSize="30sp"
         android:textStyle="bold"
-
 
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.853" />
+        app:layout_constraintVertical_bias="0.728" />
 
-    <TextView
-        android:id="@+id/text_result"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        android:text="@string/Str_text"
-        android:textSize="25sp"
-        android:textStyle="normal"
-
-        android:layout_marginStart="20dp"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.149" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
