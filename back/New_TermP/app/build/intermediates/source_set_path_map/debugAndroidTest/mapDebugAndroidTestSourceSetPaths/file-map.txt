@@ -1,0 +1,6 @@
+com.example.new_termp.test.app-annotation-experimental-1.4.0-0 C:\Users\Jung\.gradle\caches\transforms-3\12ad9819c32c92aae8daf475fe59e345\transformed\annotation-experimental-1.4.0\res
+com.example.new_termp.test.app-core-1.5.0-1 C:\Users\Jung\.gradle\caches\transforms-3\afe1e8b9a5a15f2f73a3837f2c6d3eb6\transformed\core-1.5.0\res
+com.example.new_termp.test.app-androidTest-2 C:\Users\Jung\Desktop\TermP-git\New_TermP\app\build\generated\res\resValues\androidTest\debug
+com.example.new_termp.test.app-mergeDebugAndroidTestResources-3 C:\Users\Jung\Desktop\TermP-git\New_TermP\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+com.example.new_termp.test.app-mergeDebugAndroidTestResources-4 C:\Users\Jung\Desktop\TermP-git\New_TermP\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+com.example.new_termp.test.app-debugAndroidTest-5 C:\Users\Jung\Desktop\TermP-git\New_TermP\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
