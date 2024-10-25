@@ -15,6 +15,12 @@
         android:theme="@style/Theme.New_TermP"
         tools:targetApi="31">
         <activity
+            android:name=".Appoint_Recording"
+            android:exported="false" />
+        <activity
+            android:name=".Ex_main"
+            android:exported="false" />
+        <activity
             android:name=".Recording"
             android:exported="false" />
         <activity
