@@ -6,7 +6,9 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -27,6 +29,9 @@ public class Appoint_Recording extends AppCompatActivity {
     private DatabaseReference Firebase_DB;
     private TextView Txt_Result;
     private EditText Out_Txt;
+    private ImageButton SignalBtn;
+
+    private boolean isRecording = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +41,27 @@ public class Appoint_Recording extends AppCompatActivity {
         Txt_Result = findViewById(R.id.APR_output_text);
         Firebase_DB = FirebaseDatabase.getInstance().getReference();
         Out_Txt = findViewById(R.id.APR_input_text);
+        SignalBtn = findViewById(R.id.imageButton);
 
+        SignalBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleRecording();
+            }
+        });
     }
+
+    private void toggleRecording() {
+        if (isRecording) {
+            SendStopSignal();
+            SignalBtn.setImageResource(R.drawable.start_icon);  // 버튼 아이콘을 시작으로 변경
+        } else {
+            SendStartSignal();
+            SignalBtn.setImageResource(R.drawable.stop_icon);  // 버튼 아이콘을 중지로 변경
+        }
+        isRecording = !isRecording;
+    }
+
 
     private void SendStartSignal() {
         Firebase_DB.child("voiceData").child("signal").setValue(true);
