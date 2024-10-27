@@ -30,7 +30,6 @@ public class Free_Recording extends AppCompatActivity {
         SignalBtn_I.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 toggleRecording();
             }
         });
