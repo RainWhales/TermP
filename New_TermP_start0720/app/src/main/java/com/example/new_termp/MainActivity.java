@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent MTR = new Intent(MainActivity.this, Recording.class);
+                Intent MTR = new Intent(MainActivity.this, Free_Recording.class);
                 startActivity(MTR);
             }
         });
