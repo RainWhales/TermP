@@ -15,6 +15,9 @@
         android:theme="@style/Theme.New_TermP"
         tools:targetApi="31">
         <activity
+            android:name=".Feedback"
+            android:exported="false" />
+        <activity
             android:name=".Free_Recording"
             android:exported="false" />
         <activity
