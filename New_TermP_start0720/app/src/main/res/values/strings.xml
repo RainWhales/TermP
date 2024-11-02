@@ -5,4 +5,5 @@
     <string name="Str_text">녹음 대기중..</string>
     <string name="btn_APR">지정 녹음</string>
     <string name="APR_hint">단어 또는 문장을 입력해주세요.</string>
+    <string name="Reset">Reset</string>
 </resources>
