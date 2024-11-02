@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void APRButton(){ // 메인 화면-> 지정 녹음 화면 전환
+    public void APRButton(){ // 메인 화면-> 지정 녹음 화면 전환 [ 모음 ]
 
         btn_APR = (Button) findViewById(R.id.btn_Intent_to_APR);
         btn_APR.setOnClickListener(new View.OnClickListener() {

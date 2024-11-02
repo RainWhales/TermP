@@ -28,7 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Appoint_Recording extends AppCompatActivity {
+public class Appoint_Recording extends AppCompatActivity { //모음
 
     private DatabaseReference Firebase_DB;
     private TextView Txt_Result;
@@ -37,8 +37,9 @@ public class Appoint_Recording extends AppCompatActivity {
     private Button ResetBtn;
 
     private boolean isRecording = false;
-    private HashMap<Integer, String> consonants; // 자음 해시맵
     private HashMap<Integer, String> vowels; // 모음 해시맵
+
+    private String mostFrequentData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +58,7 @@ public class Appoint_Recording extends AppCompatActivity {
         SignalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 toggleRecording();
             }
         });
@@ -64,23 +66,13 @@ public class Appoint_Recording extends AppCompatActivity {
         ResetBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 resetApp();
             }
         });
     }
 
     private void initHashMaps() {
-        consonants = new HashMap<>();
-        consonants.put(1, "ㄱ");
-        consonants.put(2, "ㄴ");
-        consonants.put(3, "ㄷ");
-        consonants.put(4, "ㄹ");
-        consonants.put(5, "ㅁ");
-        consonants.put(6, "ㅂ");
-        consonants.put(7, "ㅅ");
-        consonants.put(8, "ㅇ");
-        consonants.put(9, "ㅈ");
-
         vowels = new HashMap<>();
         vowels.put(1, "ㅏ");
         vowels.put(2, "ㅓ");
@@ -116,19 +108,37 @@ public class Appoint_Recording extends AppCompatActivity {
     }
 
     private void fetchData() {
-        Firebase_DB.child("voiceData").child("capturedText").get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DataSnapshot snapshot = task.getResult();
-                String receivedText = snapshot.getValue(String.class);
-                if (receivedText != null) {
-                    displayWithDiff(receivedText);
-                    ResetBtn.setVisibility(View.VISIBLE); //
+        // captured 데이터를 가져와 모음으로 변환하여 출력
+        Firebase_DB.child("voiceData").child("captured").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Integer capturedKey = snapshot.getValue(Integer.class);
+                if (capturedKey != null && vowels.containsKey(capturedKey)) {
+                    String vowel = vowels.get(capturedKey);
+                    displayWithDiff(vowel); // 변환된 모음 출력
                 }
-            } else {
-                Log.e("Appoint_Recording", "데이터 가져오기 실패", task.getException());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Appoint_Recording", "captured 데이터 가져오기 실패", error.toException());
+            }
+        });
+
+        Firebase_DB.child("voiceData").child("most").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                mostFrequentData = snapshot.getValue(String.class); // most 데이터 저장
+                Log.d("Appoint_Recording", "most 데이터 저장됨: " + mostFrequentData);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Appoint_Recording", "most 데이터 가져오기 실패", error.toException());
             }
         });
     }
+
 
     private void displayWithDiff(String receivedText) {
         String inputTxt = Out_Txt.getText().toString().trim();
