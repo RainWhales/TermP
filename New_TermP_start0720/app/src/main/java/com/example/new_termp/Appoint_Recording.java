@@ -112,12 +112,19 @@ public class Appoint_Recording extends AppCompatActivity { //모음
         Firebase_DB.child("voiceData").child("captured").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Integer capturedKey = snapshot.getValue(Integer.class);
-                if (capturedKey != null && vowels.containsKey(capturedKey)) {
-                    String vowel = vowels.get(capturedKey);
-                    displayWithDiff(vowel); // 변환된 모음 출력
+                if (snapshot.exists()) {
+                    Integer capturedKey = snapshot.getValue(Integer.class);
+                    if (capturedKey != null && vowels.containsKey(capturedKey)) {
+                        String vowel = vowels.get(capturedKey);
+                        displayWithDiff(vowel); // 변환된 모음 출력
+                    } else {
+                        Log.e("Appoint_Recording", "capturedKey is null or not in vowels map");
+                    }
+                } else {
+                    Log.e("Appoint_Recording", "captured 데이터가 없습니다.");
                 }
             }
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -128,8 +135,12 @@ public class Appoint_Recording extends AppCompatActivity { //모음
         Firebase_DB.child("voiceData").child("most").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                mostFrequentData = snapshot.getValue(String.class); // most 데이터 저장
-                Log.d("Appoint_Recording", "most 데이터 저장됨: " + mostFrequentData);
+                if (snapshot.exists()) {
+                    mostFrequentData = snapshot.getValue(String.class); // most 데이터 저장
+                    Log.d("Appoint_Recording", "most 데이터 저장됨: " + mostFrequentData);
+                } else {
+                    Log.e("Appoint_Recording", "most 데이터가 없습니다.");
+                }
             }
 
             @Override
@@ -141,18 +152,21 @@ public class Appoint_Recording extends AppCompatActivity { //모음
 
 
     private void displayWithDiff(String receivedText) {
-        String inputTxt = Out_Txt.getText().toString().trim();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String inputTxt = Out_Txt.getText().toString().trim();
+                SpannableStringBuilder spannable = new SpannableStringBuilder(receivedText);
 
-        SpannableStringBuilder spannable = new SpannableStringBuilder(receivedText);
+                for (int i = 0; i < Math.min(inputTxt.length(), receivedText.length()); i++) {
+                    if (inputTxt.charAt(i) != receivedText.charAt(i)) {
+                        spannable.setSpan(new ForegroundColorSpan(Color.RED), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+                }
 
-        for (int i = 0; i < Math.min(inputTxt.length(), receivedText.length()); i++) {
-            if (inputTxt.charAt(i) != receivedText.charAt(i)) {
-                spannable.setSpan(new ForegroundColorSpan(Color.RED), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                Txt_Result.setText(spannable);
             }
-        }
-
-        Txt_Result.setText(spannable);
-
+        });
     }
 
     private void resetApp() {
