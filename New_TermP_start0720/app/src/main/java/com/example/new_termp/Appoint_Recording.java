@@ -1,5 +1,6 @@
 package com.example.new_termp;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
@@ -34,7 +35,7 @@ public class Appoint_Recording extends AppCompatActivity { //모음
     private TextView Txt_Result;
     private EditText Out_Txt;
     private ImageButton SignalBtn;
-    private Button ResetBtn;
+    private Button ResetBtn, FeedbackBtn;
 
     private boolean isRecording = false;
     private HashMap<Integer, String> vowels; // 모음 해시맵
@@ -52,6 +53,9 @@ public class Appoint_Recording extends AppCompatActivity { //모음
         SignalBtn = findViewById(R.id.imageButton);
         ResetBtn = findViewById(R.id.reset_button);
         ResetBtn.setVisibility(View.GONE);
+        FeedbackBtn = findViewById(R.id.btn_Feedback);
+        FeedbackBtn.setVisibility(View.GONE);
+
 
         initHashMaps();
 
@@ -70,6 +74,14 @@ public class Appoint_Recording extends AppCompatActivity { //모음
                 resetApp();
             }
         });
+
+        FeedbackBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFeedbackActivity();
+            }
+        });
+
     }
 
     private void initHashMaps() {
@@ -117,7 +129,10 @@ public class Appoint_Recording extends AppCompatActivity { //모음
                     if (capturedKey != null && vowels.containsKey(capturedKey)) {
                         String vowel = vowels.get(capturedKey);
                         displayWithDiff(vowel); // 변환된 모음 출력
-                    } else {
+                        ResetBtn.setVisibility(View.VISIBLE);
+                        FeedbackBtn.setVisibility(View.VISIBLE);
+                    }
+                    else {
                         Log.e("Appoint_Recording", "capturedKey is null or not in vowels map");
                     }
                 } else {
@@ -173,6 +188,11 @@ public class Appoint_Recording extends AppCompatActivity { //모음
         });
     }
 
+    private void openFeedbackActivity() {
+        Intent intent = new Intent(Appoint_Recording.this, Feedback.class);
+        startActivity(intent);
+    }
+
     private void resetApp() {
         Txt_Result.setText(""); // 텍스트 출력 초기화
         Out_Txt.setText(""); // 입력 필드 초기화
@@ -180,6 +200,7 @@ public class Appoint_Recording extends AppCompatActivity { //모음
         SignalBtn.setImageResource(R.drawable.start_icon); // 시작 아이콘으로 변경
         Firebase_DB.child("voiceData").child("signal").setValue(false); // Firebase 신호 초기화
         ResetBtn.setVisibility(View.GONE); // reset 버튼 숨기기
+        FeedbackBtn.setVisibility(View.GONE);
 //
     }
 
