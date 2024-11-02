@@ -162,7 +162,7 @@ public class Appoint_Recording extends AppCompatActivity { //모음
         SignalBtn.setImageResource(R.drawable.start_icon); // 시작 아이콘으로 변경
         Firebase_DB.child("voiceData").child("signal").setValue(false); // Firebase 신호 초기화
         ResetBtn.setVisibility(View.GONE); // reset 버튼 숨기기
-
+//
     }
 
 }
