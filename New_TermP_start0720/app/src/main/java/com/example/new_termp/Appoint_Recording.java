@@ -159,8 +159,12 @@ public class Appoint_Recording extends AppCompatActivity { //모음
                 SpannableStringBuilder spannable = new SpannableStringBuilder(receivedText);
 
                 for (int i = 0; i < Math.min(inputTxt.length(), receivedText.length()); i++) {
-                    if (inputTxt.charAt(i) != receivedText.charAt(i)) {
-                        spannable.setSpan(new ForegroundColorSpan(Color.RED), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    if (inputTxt.charAt(i) == receivedText.charAt(i)) {
+                        // 문자가 일치하면 파란색으로 표시
+                        spannable.setSpan(new ForegroundColorSpan(Color.BLUE), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    } else {
+                        // 문자가 일치하지 않으면 진한 빨간색으로 표시
+                        spannable.setSpan(new ForegroundColorSpan(Color.rgb(139, 0, 0)), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     }
                 }
 
