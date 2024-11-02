@@ -190,6 +190,7 @@ public class Appoint_Recording extends AppCompatActivity { //모음
 
     private void openFeedbackActivity() {
         Intent intent = new Intent(Appoint_Recording.this, Feedback.class);
+        intent.putExtra("mostFrequentData", mostFrequentData);
         startActivity(intent);
     }
 
