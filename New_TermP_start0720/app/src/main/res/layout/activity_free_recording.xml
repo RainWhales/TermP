@@ -5,22 +5,40 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Appoint_Recording">
+    tools:context=".Free_Recording">
 
-    <TextView
-        android:id="@+id/IPR_output_text"
-        android:layout_width="374dp"
-        android:layout_height="378dp"
+    <EditText
+        android:id="@+id/APR_input_text"
+        android:layout_width="370dp"
+        android:layout_height="224dp"
         android:background="#CFE5E7"
         android:gravity="center"
+        android:hint="@string/APR_hint"
         android:importantForAutofill="no"
+        android:inputType="text"
+        android:textColor="@color/black"
         android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.486"
+        app:layout_constraintHorizontal_bias="0.487"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.087" />
+        app:layout_constraintVertical_bias="0.031" />
+
+    <TextView
+        android:id="@+id/APR_output_text"
+        android:layout_width="370dp"
+        android:layout_height="106dp"
+        android:background="#CFE5E7"
+        android:gravity="center"
+        android:textSize="11sp"
+        android:importantForAutofill="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/APR_input_text"
+        app:layout_constraintVertical_bias="0.093" />
 
     <ImageButton
         android:id="@+id/imageButton"
@@ -34,8 +52,29 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.813"
-        android:contentDescription="@null"/>
+        app:layout_constraintVertical_bias="0.813" />
+
+    <Button
+        android:id="@+id/reset_button_A"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Reset"
+        app:layout_constraintTop_toBottomOf="@id/imageButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <Button
+        android:id="@+id/btn_Feedback_A"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Feedback"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.934"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.573" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -22,11 +22,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+
 import java.util.HashMap;
 
 public class Appoint_Recording extends AppCompatActivity { //모음
 
     private DatabaseReference Firebase_DB;
+
     private TextView Txt_Result;
     private EditText Out_Txt;
     private ImageButton SignalBtn;
