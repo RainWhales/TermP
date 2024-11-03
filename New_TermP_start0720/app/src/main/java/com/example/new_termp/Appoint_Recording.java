@@ -13,12 +13,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,7 +23,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class Appoint_Recording extends AppCompatActivity { //모음
 
@@ -41,6 +36,8 @@ public class Appoint_Recording extends AppCompatActivity { //모음
     private HashMap<Integer, String> vowels; // 모음 해시맵
 
     private String mostFrequentData;
+    private String inputChar;
+    private String outputChar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,6 +169,8 @@ public class Appoint_Recording extends AppCompatActivity { //모음
             public void run() {
                 String inputTxt = Out_Txt.getText().toString().trim();
                 SpannableStringBuilder spannable = new SpannableStringBuilder(receivedText);
+                outputChar = receivedText;
+                inputChar = Out_Txt.getText().toString().trim();
 
                 for (int i = 0; i < Math.min(inputTxt.length(), receivedText.length()); i++) {
                     if (inputTxt.charAt(i) == receivedText.charAt(i)) {
@@ -191,8 +190,11 @@ public class Appoint_Recording extends AppCompatActivity { //모음
     private void openFeedbackActivity() {
         Intent intent = new Intent(Appoint_Recording.this, Feedback.class);
         intent.putExtra("mostFrequentData", mostFrequentData);
+        intent.putExtra("inputChar", inputChar);
+        intent.putExtra("outputChar", outputChar);
         startActivity(intent);
     }
+
 
     private void resetApp() {
         Txt_Result.setText(""); // 텍스트 출력 초기화
