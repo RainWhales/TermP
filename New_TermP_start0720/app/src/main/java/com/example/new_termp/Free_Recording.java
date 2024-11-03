@@ -2,8 +2,12 @@ package com.example.new_termp;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -11,6 +15,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +25,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +37,11 @@ import java.util.Locale;
 
 public class Free_Recording extends AppCompatActivity {
 
+    private ActivityResultLauncher<Intent> sttLauncher;
+
     private DatabaseReference Firebase_DB_I;
+    private StorageReference storageRef;
+
     private TextView Txt_Result_A;
     private ImageButton SignalBtn_A;
     private Button resetApp_A;
@@ -40,7 +55,6 @@ public class Free_Recording extends AppCompatActivity {
     private Bitmap imageBitmap;
 
     private boolean isRecording_A = false;
-    private static final int REQUEST_CODE_STT = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +62,8 @@ public class Free_Recording extends AppCompatActivity {
         setContentView(R.layout.activity_free_recording);
 
         Firebase_DB_I = FirebaseDatabase.getInstance().getReference();
+        storageRef = FirebaseStorage.getInstance().getReference();
+
         Txt_Result_A = findViewById(R.id.APR_output_text);
         SignalBtn_A = findViewById(R.id.imageButton);
         A_Outputbtn = findViewById(R.id.APR_input_text);
@@ -82,7 +98,23 @@ public class Free_Recording extends AppCompatActivity {
             }
         });
 
+        sttLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        ArrayList<String> results = result.getData().getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                        if (results != null && !results.isEmpty()) {
+                            Txt_Result_A.setText(results.get(0)); // STT 결과 표시
+                            displayWithDiff();
+                            fetchData_I(); // STT가 끝난 후 Firebase 데이터 가져오기
+                        }
+                    }
+                    isRecording_A = false;
+                    SignalBtn_A.setImageResource(R.drawable.start_icon); // 시작 아이콘으로 변경
+                }
+        );
     }
+
     private void toggleRecording() {
         if (isRecording_A) {
             SendStopSignal();
@@ -106,7 +138,7 @@ public class Free_Recording extends AppCompatActivity {
 
     private void SendStopSignal() {
         Firebase_DB_I.child("voiceData").child("signal").setValue(false);
-        fetchData_I();
+        fetchImageFromStorage();
     }
 
     private void fetchData_I() {
@@ -117,6 +149,8 @@ public class Free_Recording extends AppCompatActivity {
                 Integer capturedKey = snapshot.getValue(Integer.class);
                 if (capturedKey != null && columns.containsKey(capturedKey)) {
                     outputChar = columns.get(capturedKey);
+                    resetApp_A.setVisibility(View.VISIBLE);
+                    feedback_A.setVisibility(View.VISIBLE);
                 } else {
                     outputChar = "데이터 없음";
                 }
@@ -131,29 +165,59 @@ public class Free_Recording extends AppCompatActivity {
     }
 
 
-            private void startSpeechToText() {
+    private void fetchImageFromStorage() {
+        // Firebase Storage에서 이미지 파일 경로 설정
+        StorageReference imageRef = storageRef.child("sampleImage.jpg"); // 이미지 경로에 맞게 수정
+
+        final long ONE_MEGABYTE = 1024 * 1024;
+        imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(bytes -> {
+            imageBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            Log.d("Free_Recording", "이미지 다운로드 성공");
+
+            // 필요한 경우 UI에 바로 표시
+            // imageView.setImageBitmap(imageBitmap);
+
+        }).addOnFailureListener(exception -> {
+            Log.e("Free_Recording", "이미지 다운로드 실패", exception);
+        });
+    }
+
+
+
+    private void startSpeechToText() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
         intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "발음해주세요");
 
         try {
-            startActivityForResult(intent, REQUEST_CODE_STT);
+            sttLauncher.launch(intent);
         } catch (Exception e) {
             Txt_Result_A.setText("STT를 사용할 수 없습니다.");
         }
     }
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_STT && resultCode == RESULT_OK && data != null) {
-            ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-            if (result != null && !result.isEmpty()) {
-                Txt_Result_A.setText(result.get(0)); // 인식된 텍스트를 출력
+
+
+    private void displayWithDiff() {
+            // STT 결과와 사용자 입력 텍스트 가져오기
+            String sttResult = Txt_Result_A.getText().toString().trim();
+            String userInput = A_Outputbtn.getText().toString().trim();
+
+            SpannableStringBuilder spannable = new SpannableStringBuilder(sttResult);
+
+            // STT 결과와 사용자 입력 비교
+            for (int i = 0; i < Math.min(userInput.length(), sttResult.length()); i++) {
+                if (userInput.charAt(i) == sttResult.charAt(i)) {
+                    // 문자가 일치하면 파란색으로 표시
+                    spannable.setSpan(new ForegroundColorSpan(Color.BLUE), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                } else {
+                    // 문자가 일치하지 않으면 빨간색으로 표시
+                    spannable.setSpan(new ForegroundColorSpan(Color.RED), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
             }
-        }
-        // STT가 종료되었으므로 녹음 상태를 false로 설정
-        isRecording_A = false;
-        SignalBtn_A.setImageResource(R.drawable.start_icon); // 아이콘을 시작 아이콘으로 변경
+
+            // `Txt_Result_A`에 색상 적용한 텍스트 설정
+            Txt_Result_A.setText(spannable);
     }
 
     private void resetApp() {
