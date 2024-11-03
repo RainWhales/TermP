@@ -83,15 +83,14 @@ public class Appoint_Recording extends AppCompatActivity { //모음
 
     private void initHashMaps() {
         vowels = new HashMap<>();
-        vowels.put(1, "ㅏ");
-        vowels.put(2, "ㅓ");
-        vowels.put(3, "ㅗ");
-        vowels.put(4, "ㅜ");
-        vowels.put(5, "ㅡ");
-        vowels.put(6, "ㅛ");
-        vowels.put(7, "ㅠ");
-        vowels.put(8, "ㅔ");
-        vowels.put(9, "ㅗ");
+        vowels.put(0, "ㅣ");
+        vowels.put(1, "ㅡ");
+        vowels.put(2, "ㅜ");
+        vowels.put(3, "ㅔ");
+        vowels.put(4, "ㅓ");
+        vowels.put(5, "ㅗ");
+        vowels.put(6, "ㅐ");
+        vowels.put(7, "ㅏ");
     }
 
 
