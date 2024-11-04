@@ -5,8 +5,10 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
@@ -55,6 +57,7 @@ public class Free_Recording extends AppCompatActivity {
     private String outputChar;
 
     private String imageUrl;
+    private int mappedNumber;
 
     private boolean isRecording_A = false;
 
@@ -94,16 +97,33 @@ public class Free_Recording extends AppCompatActivity {
             }
         });
 
+        A_Outputbtn.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mappedNumber = getMappedNumber(s.toString().trim());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
         feedback_A.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (imageUrl != null) {
-                    openFeedbackActivity_A(imageUrl); // URL이 있을 때만 액티비티 전환
+                    openFeedbackActivity_A(imageUrl, mappedNumber); // URL이 있을 때만 액티비티 전환
                 } else {
                     Log.e("Free_Recording", "이미지 URL이 없습니다. 이미지를 먼저 다운로드하세요.");
                 }
             }
         });
+
+
 
         sttLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -123,6 +143,17 @@ public class Free_Recording extends AppCompatActivity {
                     SignalBtn_A.setImageResource(R.drawable.start_icon); // 시작 아이콘으로 변경
                 }
         );
+    }
+
+    private int getMappedNumber (String input){
+        if (input.equals("바") || input.equals("빠") || input.equals("파") || input.equals("마"))  {
+            return 0;
+        } else if (input.equals("다") || input.equals("따") || input.equals("타") || input.equals("자") || input.equals("짜") || input.equals("차") || input.equals("사") || input.equals("싸") || input.equals("나") || input.equals("라")) {
+            return 1;
+        } else if (input.equals("가") || input.equals("까") || input.equals("카") || input.equals("하"))  {
+            return 2;
+        }
+        return -1; // 매칭되지 않는 경우
     }
 
     private void toggleRecording() {
@@ -229,10 +260,11 @@ public class Free_Recording extends AppCompatActivity {
             Txt_Result_A.setText(spannable);
     }
 
-    private void openFeedbackActivity_A(String imageUrl) {
+    private void openFeedbackActivity_A(String imageUrl, int mappedNumber) {
         Intent intent = new Intent(Free_Recording.this, Free_Feedback.class);
         intent.putExtra("imageUrl", imageUrl);
         intent.putExtra("outputChar", outputChar);
+        intent.putExtra("mappedNumber", mappedNumber);
         startActivity(intent);
     }
 
