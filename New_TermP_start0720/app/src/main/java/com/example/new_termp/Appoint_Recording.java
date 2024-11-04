@@ -119,7 +119,7 @@ public class Appoint_Recording extends AppCompatActivity { //모음
 
     private void fetchData() {
         // captured 데이터를 가져와 모음으로 변환하여 출력
-        Firebase_DB.child("voiceData").child("captured").addListenerForSingleValueEvent(new ValueEventListener() {
+        Firebase_DB.child("voiceData").child("captured").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
@@ -205,6 +205,9 @@ public class Appoint_Recording extends AppCompatActivity { //모음
         Firebase_DB.child("voiceData").child("signal").setValue(false); // Firebase 신호 초기화
         ResetBtn.setVisibility(View.GONE); // reset 버튼 숨기기
         FeedbackBtn.setVisibility(View.GONE);
+        mostFrequentData = null; // 추가된 초기화 코드
+        inputChar = null;
+        outputChar = null;
 //
     }
 

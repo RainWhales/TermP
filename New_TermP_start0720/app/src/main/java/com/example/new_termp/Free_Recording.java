@@ -52,7 +52,7 @@ public class Free_Recording extends AppCompatActivity {
     private HashMap<Integer, String> columns; // 자음해시맵
     private String outputChar;
 
-    private Bitmap imageBitmap;
+    private String imageUrl;
 
     private boolean isRecording_A = false;
 
@@ -71,6 +71,7 @@ public class Free_Recording extends AppCompatActivity {
         feedback_A = findViewById(R.id.btn_Feedback_A);
         resetApp_A.setVisibility(View.GONE);
         feedback_A.setVisibility(View.GONE);
+        feedback_A.setEnabled(false);
 
         initHashMaps();
 
@@ -94,7 +95,11 @@ public class Free_Recording extends AppCompatActivity {
         feedback_A.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openFeedbackActivity_A();
+                if (imageUrl != null) {
+                    openFeedbackActivity_A(imageUrl); // URL이 있을 때만 액티비티 전환
+                } else {
+                    Log.e("Free_Recording", "이미지 URL이 없습니다. 이미지를 먼저 다운로드하세요.");
+                }
             }
         });
 
@@ -171,15 +176,13 @@ public class Free_Recording extends AppCompatActivity {
 
     private void fetchImageFromStorage() {
         // Firebase Storage에서 이미지 파일 경로 설정
-        StorageReference imageRef = storageRef.child("sampleImage.jpg"); // 이미지 경로에 맞게 수정
+        StorageReference imageRef = storageRef.child("image/g.png"); // 이미지 경로에 맞게 수정
+        Log.d("Free_Recording", "이미지 경로: " + imageRef.getPath());
 
-        final long ONE_MEGABYTE = 1024 * 1024;
-        imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(bytes -> {
-            imageBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            Log.d("Free_Recording", "이미지 다운로드 성공");
+        imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+            imageUrl = uri.toString(); // 이미지 URL을 가져옴
 
-            // 필요한 경우 UI에 바로 표시
-            // imageView.setImageBitmap(imageBitmap);
+            feedback_A.setEnabled(true);
 
         }).addOnFailureListener(exception -> {
             Log.e("Free_Recording", "이미지 다운로드 실패", exception);
@@ -224,14 +227,9 @@ public class Free_Recording extends AppCompatActivity {
             Txt_Result_A.setText(spannable);
     }
 
-    private void openFeedbackActivity_A() {
+    private void openFeedbackActivity_A(String imageUrl) {
         Intent intent = new Intent(Free_Recording.this, Free_Feedback.class);
-        if (imageBitmap != null) {
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
-            intent.putExtra("imageBitmap", byteArray);
-        }
+        intent.putExtra("imageUrl", imageUrl);
         intent.putExtra("outputChar", outputChar);
         startActivity(intent);
     }
