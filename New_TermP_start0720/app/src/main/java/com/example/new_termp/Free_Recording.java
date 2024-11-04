@@ -30,6 +30,7 @@ import com.google.firebase.storage.StorageReference;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import java.io.ByteArrayOutputStream;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,7 +50,6 @@ public class Free_Recording extends AppCompatActivity {
     private EditText A_Outputbtn;
 
     private HashMap<Integer, String> columns; // 자음해시맵
-    private String inputChar;
     private String outputChar;
 
     private Bitmap imageBitmap;
@@ -94,7 +94,7 @@ public class Free_Recording extends AppCompatActivity {
         feedback_A.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //피드백 액티비티 새로 생성;
+                openFeedbackActivity_A();
             }
         });
 
@@ -159,7 +159,6 @@ public class Free_Recording extends AppCompatActivity {
                 } else {
                     outputChar = "데이터 없음";
                 }
-                // fetchImageData(); // 이미지 가져오기 시작 , 스토리지 구축 후 적용
             }
 
             @Override
@@ -223,6 +222,18 @@ public class Free_Recording extends AppCompatActivity {
 
             // `Txt_Result_A`에 색상 적용한 텍스트 설정
             Txt_Result_A.setText(spannable);
+    }
+
+    private void openFeedbackActivity_A() {
+        Intent intent = new Intent(Free_Recording.this, Free_Feedback.class);
+        if (imageBitmap != null) {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            intent.putExtra("imageBitmap", byteArray);
+        }
+        intent.putExtra("outputChar", outputChar);
+        startActivity(intent);
     }
 
     private void resetApp() {
