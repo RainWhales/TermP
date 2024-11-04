@@ -57,6 +57,7 @@ public class Free_Recording extends AppCompatActivity {
     private String outputChar;
 
     private String imageUrl;
+    private int jaumLabelData;
     private int mappedNumber;
 
     private boolean isRecording_A = false;
@@ -116,7 +117,7 @@ public class Free_Recording extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (imageUrl != null) {
-                    openFeedbackActivity_A(imageUrl, mappedNumber); // URL이 있을 때만 액티비티 전환
+                    openFeedbackActivity_A(imageUrl, mappedNumber, jaumLabelData); // URL이 있을 때만 액티비티 전환
                 } else {
                     Log.e("Free_Recording", "이미지 URL이 없습니다. 이미지를 먼저 다운로드하세요.");
                 }
@@ -194,6 +195,25 @@ public class Free_Recording extends AppCompatActivity {
                     outputChar = columns.get(capturedKey);
                     resetApp_A.setVisibility(View.VISIBLE);
                     feedback_A.setVisibility(View.VISIBLE);
+
+                    // Firebase로부터 추가 데이터 가져오기 (예: jaumLabelData)
+                    Firebase_DB_I.child("voiceData").child("jaumLabelData").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                jaumLabelData = snapshot.getValue(Integer.class);
+                                Log.d("Free_Recording", "자음 데이터 저장됨: " + jaumLabelData);
+                            } else {
+                                Log.e("Free_Recording", "자음 데이터가 없습니다.");
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Log.e("Free_Recording", "데이터 가져오기 실패", error.toException());
+                        }
+                    });
+
                 } else {
                     outputChar = "데이터 없음";
                 }
@@ -260,11 +280,18 @@ public class Free_Recording extends AppCompatActivity {
             Txt_Result_A.setText(spannable);
     }
 
-    private void openFeedbackActivity_A(String imageUrl, int mappedNumber) {
+
+
+    private void openFeedbackActivity_A(String imageUrl, int mappedNumber, int jaumLabelData) {
         Intent intent = new Intent(Free_Recording.this, Free_Feedback.class);
         intent.putExtra("imageUrl", imageUrl);
         intent.putExtra("outputChar", outputChar);
         intent.putExtra("mappedNumber", mappedNumber);
+        intent.putExtra("jaumLabelData", jaumLabelData);
+        String inputText = A_Outputbtn.getText().toString().trim();
+        intent.putExtra("inputText", inputText);
+        String sttResultText = Txt_Result_A.getText().toString().trim();
+        intent.putExtra("sttResultText", sttResultText);
         startActivity(intent);
     }
 

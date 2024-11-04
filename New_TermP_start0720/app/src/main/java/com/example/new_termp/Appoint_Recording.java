@@ -145,7 +145,7 @@ public class Appoint_Recording extends AppCompatActivity { //모음
             }
         });
 
-        Firebase_DB.child("voiceData").child("most").addListenerForSingleValueEvent(new ValueEventListener() {
+        Firebase_DB.child("voiceData").child("most").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {

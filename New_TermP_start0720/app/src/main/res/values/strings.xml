@@ -7,6 +7,6 @@
     <string name="APR_hint">단어 또는 문장을 입력해주세요.</string>
     <string name="Reset">Reset</string>
     <string name="Feedback">피드백</string>
-    <string name="Standard_image">표준 이미지</string>
-    <string name="Input_image">발음 이미지</string>
+    <string name="Standard_image">표준 파형입니다.</string>
+    <string name="Input_image">발음 파형입니다.</string>
 </resources>
