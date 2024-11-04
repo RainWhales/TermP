@@ -109,6 +109,9 @@ public class Free_Recording extends AppCompatActivity {
                             fetchData_I(); // STT가 끝난 후 Firebase 데이터 가져오기
                         }
                     }
+
+                    SendStopSignal();
+
                     isRecording_A = false;
                     SignalBtn_A.setImageResource(R.drawable.start_icon); // 시작 아이콘으로 변경
                 }
@@ -130,6 +133,8 @@ public class Free_Recording extends AppCompatActivity {
     private void initHashMaps() {
         columns = new HashMap<>();
         columns.put(0, "ㅣ"); // 자음 해시맵 받아서 새로 작성할것,
+        columns.put(1, "가");
+
     }
 
     private void SendStartSignal() {
@@ -143,7 +148,7 @@ public class Free_Recording extends AppCompatActivity {
 
     private void fetchData_I() {
         // Firebase Database에서 데이터를 가져와 해시맵에 대응
-        Firebase_DB_I.child("voiceData").child("captured").addListenerForSingleValueEvent(new ValueEventListener() {
+        Firebase_DB_I.child("voiceData").child("captured_jaum").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override // 경로 따로 지정해줄것
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Integer capturedKey = snapshot.getValue(Integer.class);
