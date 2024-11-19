@@ -1,8 +1,9 @@
 {
   "project_info": {
     "project_number": "1055670586245",
+    "firebase_url": "https://anproject-846d0-default-rtdb.firebaseio.com",
     "project_id": "anproject-846d0",
-    "storage_bucket": "anproject-846d0.appspot.com"
+    "storage_bucket": "anproject-846d0.firebasestorage.app"
   },
   "client": [
     {

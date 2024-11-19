@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">New_TermP</string>
-    <string name="btn_ITR">자유 녹음</string>
+    <string name="btn_ITR">자음 녹음</string>
     <string name="btn_Recording">녹음 시작</string>
     <string name="Str_text">녹음 대기중..</string>
-    <string name="btn_APR">지정 녹음</string>
+    <string name="btn_APR">모음 녹음</string>
     <string name="APR_hint">단어 또는 문장을 입력해주세요.</string>
     <string name="Reset">Reset</string>
+    <string name="Feedback">피드백</string>
+    <string name="Standard_image">표준 파형입니다.</string>
+    <string name="Input_image">발음 파형입니다.</string>
 </resources>

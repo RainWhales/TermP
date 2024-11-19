@@ -1,5 +1,6 @@
 package com.example.new_termp;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
@@ -12,12 +13,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,20 +22,24 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.HashMap;
-import java.util.Map;
 
-public class Appoint_Recording extends AppCompatActivity {
+import java.util.HashMap;
+
+public class Appoint_Recording extends AppCompatActivity { //모음
 
     private DatabaseReference Firebase_DB;
+
     private TextView Txt_Result;
     private EditText Out_Txt;
     private ImageButton SignalBtn;
-    private Button ResetBtn;
+    private Button ResetBtn, FeedbackBtn;
 
     private boolean isRecording = false;
-    private HashMap<Integer, String> consonants; // 자음 해시맵
     private HashMap<Integer, String> vowels; // 모음 해시맵
+
+    private String mostFrequentData;
+    private String inputChar;
+    private String outputChar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,12 +52,16 @@ public class Appoint_Recording extends AppCompatActivity {
         SignalBtn = findViewById(R.id.imageButton);
         ResetBtn = findViewById(R.id.reset_button);
         ResetBtn.setVisibility(View.GONE);
+        FeedbackBtn = findViewById(R.id.btn_Feedback);
+        FeedbackBtn.setVisibility(View.GONE);
+
 
         initHashMaps();
 
         SignalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 toggleRecording();
             }
         });
@@ -64,33 +69,30 @@ public class Appoint_Recording extends AppCompatActivity {
         ResetBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 resetApp();
             }
         });
+
+        FeedbackBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFeedbackActivity();
+            }
+        });
+
     }
 
     private void initHashMaps() {
-        consonants = new HashMap<>();
-        consonants.put(1, "ㄱ");
-        consonants.put(2, "ㄴ");
-        consonants.put(3, "ㄷ");
-        consonants.put(4, "ㄹ");
-        consonants.put(5, "ㅁ");
-        consonants.put(6, "ㅂ");
-        consonants.put(7, "ㅅ");
-        consonants.put(8, "ㅇ");
-        consonants.put(9, "ㅈ");
-
         vowels = new HashMap<>();
-        vowels.put(1, "ㅏ");
-        vowels.put(2, "ㅓ");
-        vowels.put(3, "ㅗ");
-        vowels.put(4, "ㅜ");
-        vowels.put(5, "ㅡ");
-        vowels.put(6, "ㅛ");
-        vowels.put(7, "ㅠ");
-        vowels.put(8, "ㅔ");
-        vowels.put(9, "ㅗ");
+        vowels.put(0, "ㅣ");
+        vowels.put(1, "ㅡ");
+        vowels.put(2, "ㅜ");
+        vowels.put(3, "ㅔ");
+        vowels.put(4, "ㅓ");
+        vowels.put(5, "ㅗ");
+        vowels.put(6, "ㅐ");
+        vowels.put(7, "ㅏ");
     }
 
 
@@ -116,34 +118,84 @@ public class Appoint_Recording extends AppCompatActivity {
     }
 
     private void fetchData() {
-        Firebase_DB.child("voiceData").child("capturedText").get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DataSnapshot snapshot = task.getResult();
-                String receivedText = snapshot.getValue(String.class);
-                if (receivedText != null) {
-                    displayWithDiff(receivedText);
-                    ResetBtn.setVisibility(View.VISIBLE); //
+        // captured 데이터를 가져와 모음으로 변환하여 출력
+        Firebase_DB.child("voiceData").child("captured").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Integer capturedKey = snapshot.getValue(Integer.class);
+                    if (capturedKey != null && vowels.containsKey(capturedKey)) {
+                        String vowel = vowels.get(capturedKey);
+                        displayWithDiff(vowel); // 변환된 모음 출력
+                        ResetBtn.setVisibility(View.VISIBLE);
+                        FeedbackBtn.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        Log.e("Appoint_Recording", "capturedKey is null or not in vowels map");
+                    }
+                } else {
+                    Log.e("Appoint_Recording", "captured 데이터가 없습니다.");
                 }
-            } else {
-                Log.e("Appoint_Recording", "데이터 가져오기 실패", task.getException());
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Appoint_Recording", "captured 데이터 가져오기 실패", error.toException());
+            }
+        });
+
+        Firebase_DB.child("voiceData").child("most").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    mostFrequentData = snapshot.getValue(String.class); // most 데이터 저장
+                    Log.d("Appoint_Recording", "most 데이터 저장됨: " + mostFrequentData);
+                } else {
+                    Log.e("Appoint_Recording", "most 데이터가 없습니다.");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Appoint_Recording", "most 데이터 가져오기 실패", error.toException());
             }
         });
     }
 
+
     private void displayWithDiff(String receivedText) {
-        String inputTxt = Out_Txt.getText().toString().trim();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String inputTxt = Out_Txt.getText().toString().trim();
+                SpannableStringBuilder spannable = new SpannableStringBuilder(receivedText);
+                outputChar = receivedText;
+                inputChar = Out_Txt.getText().toString().trim();
 
-        SpannableStringBuilder spannable = new SpannableStringBuilder(receivedText);
+                for (int i = 0; i < Math.min(inputTxt.length(), receivedText.length()); i++) {
+                    if (inputTxt.charAt(i) == receivedText.charAt(i)) {
+                        // 문자가 일치하면 파란색으로 표시
+                        spannable.setSpan(new ForegroundColorSpan(Color.BLUE), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    } else {
+                        // 문자가 일치하지 않으면 진한 빨간색으로 표시
+                        spannable.setSpan(new ForegroundColorSpan(Color.rgb(139, 0, 0)), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+                }
 
-        for (int i = 0; i < Math.min(inputTxt.length(), receivedText.length()); i++) {
-            if (inputTxt.charAt(i) != receivedText.charAt(i)) {
-                spannable.setSpan(new ForegroundColorSpan(Color.RED), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                Txt_Result.setText(spannable);
             }
-        }
-
-        Txt_Result.setText(spannable);
-
+        });
     }
+
+    private void openFeedbackActivity() {
+        Intent intent = new Intent(Appoint_Recording.this, Feedback.class);
+        intent.putExtra("mostFrequentData", mostFrequentData);
+        intent.putExtra("inputChar", inputChar);
+        intent.putExtra("outputChar", outputChar);
+        startActivity(intent);
+    }
+
 
     private void resetApp() {
         Txt_Result.setText(""); // 텍스트 출력 초기화
@@ -152,7 +204,11 @@ public class Appoint_Recording extends AppCompatActivity {
         SignalBtn.setImageResource(R.drawable.start_icon); // 시작 아이콘으로 변경
         Firebase_DB.child("voiceData").child("signal").setValue(false); // Firebase 신호 초기화
         ResetBtn.setVisibility(View.GONE); // reset 버튼 숨기기
-
+        FeedbackBtn.setVisibility(View.GONE);
+        mostFrequentData = null; // 추가된 초기화 코드
+        inputChar = null;
+        outputChar = null;
+//
     }
 
 }
